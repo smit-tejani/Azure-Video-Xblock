@@ -1,0 +1,1 @@
+from .azurevideoplayerxblock import AzureVideoplayerXblock

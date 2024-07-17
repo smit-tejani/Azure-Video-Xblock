@@ -1,0 +1,16 @@
+setup.py
+azurevideoplayerxblock/__init__.py
+azurevideoplayerxblock/azurevideoplayerxblock.py
+azurevideoplayerxblock/static/README.txt
+azurevideoplayerxblock/static/css/azurevideoplayerxblock.css
+azurevideoplayerxblock/static/html/azurevideoplayerxblock.html
+azurevideoplayerxblock/static/html/azurevideoplayerxblock_edit.html
+azurevideoplayerxblock/static/js/src/azurevideoplayerxblock.js
+azurevideoplayerxblock/static/js/src/azurevideoplayerxblock_edit.js
+azurevideoplayerxblock/static/js/src/initializePlayer.js
+azurevideoplayerxblock_xblock.egg-info/PKG-INFO
+azurevideoplayerxblock_xblock.egg-info/SOURCES.txt
+azurevideoplayerxblock_xblock.egg-info/dependency_links.txt
+azurevideoplayerxblock_xblock.egg-info/entry_points.txt
+azurevideoplayerxblock_xblock.egg-info/requires.txt
+azurevideoplayerxblock_xblock.egg-info/top_level.txt

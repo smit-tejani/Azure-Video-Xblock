@@ -1771,3 +1771,22 @@ video::-webkit-media-text-track-display {
     position: absolute;
     width: 1px
 }
+
+.iframe-container {
+    width: unset;
+}
+
+.iframe-container-2 {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%;
+}
+
+.azure-video {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+}

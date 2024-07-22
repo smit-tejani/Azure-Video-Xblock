@@ -5,6 +5,7 @@ import pkg_resources
 import six
 from datetime import datetime, timedelta
 from django.conf import settings
+from django.core.cache import cache
 
 from azure.storage.blob import generate_blob_sas, BlobSasPermissions
 from web_fragments.fragment import Fragment
@@ -17,10 +18,13 @@ from xblock.fields import Scope, String
 def _(text):
     return text
 
+
 class AzureVideoplayerXblock(XBlock):
     """
     TO-DO: document what your XBlock does.
     """
+
+    AZURE_CACHE_NAME = 'azure_{video_name}'
 
     # Fields are defined on the class.  You can access them in your code as
     # self.<fieldname>.
@@ -30,12 +34,7 @@ class AzureVideoplayerXblock(XBlock):
         default="",
         scope=Scope.settings,
     )
-    azure_video_url = String(
-        display_name=_("Azure Video URL"),
-        help=_("Get Video URL to be displayed in XBlock."),
-        default="",
-        scope=Scope.settings,
-    )
+
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
@@ -60,14 +59,14 @@ class AzureVideoplayerXblock(XBlock):
         Create a fragment used to display the edit view in the Studio.
         """
         html_str = self.resource_string("static/html/azurevideoplayerxblock_edit.html")
-        frag = Fragment(six.text_type(html_str).format(azure_video_url=self.azure_video_url, azure_video_name=self.azure_video_name))
+        frag = Fragment(six.text_type(html_str).format(azure_video_name=self.azure_video_name))
         js_str = self.resource_string("static/js/src/azurevideoplayerxblock_edit.js")
         frag.add_css(self.resource_string("static/css/azurevideoplayerxblock.css"))
         frag.add_javascript(six.text_type(js_str))
         frag.initialize_js('AzureVideoplayerEditBlock')
 
         return frag
-    
+
     @staticmethod
     def json_response(data):
         return Response(
@@ -84,11 +83,11 @@ class AzureVideoplayerXblock(XBlock):
             response['errors'].append('Azure video name is required')
             return self.json_response(response)
         self.azure_video_name = data.get('azure_video_name')
-        self.azure_video_url = self.get_azure_video_url(self.azure_video_name)
+        self.get_azure_url_from_cache()
 
         return self.json_response(response)
 
-    def get_azure_video_url(self, blob_name):
+    def generate_azure_video_url(self, blob_name):
         sas_token = self.generate_sas_token(blob_name)
         video_url = f"https://{settings.AZURE_ACCOUNT_NAME}.blob.core.windows.net/{settings.AZURE_CONTAINER}/{blob_name}?{sas_token}"
         return video_url
@@ -100,10 +99,24 @@ class AzureVideoplayerXblock(XBlock):
             blob_name=blob_name,
             account_key=settings.AZURE_ACCOUNT_KEY,
             permission=BlobSasPermissions(read=True),
-            expiry=datetime.utcnow() + timedelta(hours=1)  # Set expiration time
+            expiry=datetime.utcnow() + timedelta(seconds=settings.AZURE_URL_TIMEOUT)  # Set expiration time
         )
         return sas_token
 
+    def set_azure_url_in_cache(self, azure_video_name):
+        generated_azure_video_url = self.generate_azure_video_url(azure_video_name)
+        formatted_azure_cache_name = self.AZURE_CACHE_NAME.format(video_name=azure_video_name)
+        cache.set(formatted_azure_cache_name, generated_azure_video_url, settings.AZURE_URL_TIMEOUT)
+
+    def get_azure_url_from_cache(self):
+        formatted_azure_cache_name = self.AZURE_CACHE_NAME.format(video_name=self.azure_video_name)
+        if not formatted_azure_cache_name in cache and self.azure_video_name:
+            self.set_azure_url_in_cache(self.azure_video_name)
+        return cache.get(formatted_azure_cache_name)
+
+    @property
+    def azure_video_url(self):
+        return self.get_azure_url_from_cache() or ''
 
     @staticmethod
     def workbench_scenarios():

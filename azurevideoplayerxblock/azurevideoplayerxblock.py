@@ -28,6 +28,11 @@ class AzureVideoplayerXblock(XBlock):
 
     # Fields are defined on the class.  You can access them in your code as
     # self.<fieldname>.
+    display_name = String(
+        display_name=_("Display Name"),
+        default="Azure Video Player",
+        scope=Scope.settings,
+    )
     azure_video_name = String(
         display_name=_("Azure Video Name"),
         help=_("Get Video Name to be displayed in XBlock."),
@@ -79,9 +84,13 @@ class AzureVideoplayerXblock(XBlock):
         Called when submitting the form in Studio.
         """
         response = {'result': 'success', "errors": []}
+        if not data.get('display_name', None):
+            response['errors'].append('Display Name is required')
+            return self.json_response(response)
         if not data.get('azure_video_name', None):
             response['errors'].append('Azure video name is required')
             return self.json_response(response)
+        self.display_name = data.get('display_name')
         self.azure_video_name = data.get('azure_video_name')
         self.get_azure_url_from_cache()
 

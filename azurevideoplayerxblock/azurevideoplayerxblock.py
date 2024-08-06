@@ -64,7 +64,10 @@ class AzureVideoplayerXblock(XBlock):
         Create a fragment used to display the edit view in the Studio.
         """
         html_str = self.resource_string("static/html/azurevideoplayerxblock_edit.html")
-        frag = Fragment(six.text_type(html_str).format(azure_video_name=self.azure_video_name))
+        frag = Fragment(six.text_type(html_str).format(
+            azure_video_name=self.azure_video_name,
+            display_name=self.display_name
+        ))
         js_str = self.resource_string("static/js/src/azurevideoplayerxblock_edit.js")
         frag.add_css(self.resource_string("static/css/azurevideoplayerxblock.css"))
         frag.add_javascript(six.text_type(js_str))

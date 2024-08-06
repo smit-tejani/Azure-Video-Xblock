@@ -3,6 +3,7 @@ function AzureVideoplayerEditBlock(runtime, element) {
     var handlerUrl = runtime.handlerUrl(element, 'studio_submit');
     var data = {
       azure_video_name: $(element).find('input[name=azure_video_name]').val(),
+      display_name: $(element).find('input[name=display_name]').val(),
     };
     runtime.notify('save', {state: 'start'});
     $.post(handlerUrl, JSON.stringify(data)).done(function(response) {
